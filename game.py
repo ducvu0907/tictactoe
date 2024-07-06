@@ -1,37 +1,31 @@
+from algo import minimax
+from copy import copy
+
 class Game:
   def __init__(self, board_size=5):
     self.board_size = board_size
-    self.board = [['_' for _ in range(board_size)] for _ in range(board_size)]
+    self.board = [['-' for _ in range(board_size)] for _ in range(board_size)]
     self.turn = 'x'
-    self.game_over = False
   
   def display_board(self):
-    """
-    Display the current state of the board.
-    """
+    """Display the current state of the board."""
     board = self.board
+    n = self.board_size
     print("\n\n")
-    print("             |       |       |       |      ")
-    print(f"         {board[0][0]}   |   {board[0][1]}   |   {board[0][2]}   |   {board[0][3]}   |   {board[0][4]}   ")
-    print(f"      _______|_______|_______|_______|_______")
-    print(f"             |       |       |       |      ")
-    print(f"         {board[1][0]}   |   {board[1][1]}   |   {board[1][2]}   |   {board[1][3]}   |   {board[1][4]}   ")
-    print(f"      _______|_______|_______|_______|_______")
-    print(f"             |       |       |       |      ")
-    print(f"         {board[2][0]}   |   {board[2][1]}   |   {board[2][2]}   |   {board[2][3]}   |   {board[2][4]}   ")
-    print(f"      _______|_______|_______|_______|_______")
-    print(f"             |       |       |       |      ")
-    print(f"         {board[3][0]}   |   {board[3][1]}   |   {board[3][2]}   |   {board[3][3]}   |   {board[3][4]}   ")
-    print(f"      _______|_______|_______|_______|_______")
-    print(f"             |       |       |       |      ")
-    print(f"         {board[4][0]}   |   {board[4][1]}   |   {board[4][2]}   |   {board[4][3]}   |   {board[4][4]}   ")
-    print(f"             |       |       |       |      ")
+    print(f"             {"|       " * (n-1)}")
+    for row in range(n):
+      row_str = f"         {board[row][0]}   |"
+      for col in range(1, n):
+        row_str += f"   {board[row][col]}   {'|' if col < n-1 else ''}"
+      print(row_str)
+      if row < n - 1:
+        print(f"      {'_______|' * (n-1)}_______")
+        print(f"             {"|       "*(n-1)}")
+    print(f"             {"|       "*(n-1)}")
     print("\n\n")
 
   def is_winner(self, player):
-    """
-    Check 4-in-a-row wins of the board
-    """
+    """Check 4-in-a-row wins of the board."""
     n = self.board_size
 
     # check all rows
@@ -53,36 +47,74 @@ class Game:
     return False
   
   def is_draw(self):
-    if self.is_winner('x') or self.is_winner('o'):
+    """Check if the game is draw."""
+    if any('-' in row for row in self.board):
       return False
-    if all(self.board[row][col] != '_' for row in range(self.board_size) for col in range(self.board_size)):
-      return True
-    return False
+    return True
 
   def is_valid_move(self, move):
     """
-    Check if the move is valid
+    Check if the move is valid.
     """
     row, col = move
-    if 0 <= row < self.board_size and 0 <= col < self.board_size and self.board[row][col] == '_':
+    if 0 <= row < self.board_size and 0 <= col < self.board_size and self.board[row][col] == '-':
       return True
     return False
 
   def make_move(self, move, player):
-    """
-    Place player's marker on the board and update turn
-    """
+    """Place player's marker on the board."""
     if self.turn == player and self.is_valid_move(move):
       row, col = move
       self.board[row][col] = player
-      self.turn = 'o' if player == 'x' else 'x' # update turn
+      self.turn = 'o' if player == 'x' else 'x'
+      return True
+    else:
+      return False
 
-  def play(self):
-    pass
+def play():
+  """Main game loop."""
+  game = Game()
+  print("Welcome to 5x5 Tic-Tac-Toe!")
+  print("Please choose your marker (x/o)")
+  player = input()
+  while player != 'x' and player != 'o':
+    print("Please choose your marker (x/o)")
+    player = input()
+  ai = 'x' if player == 'o' else 'o'
 
-#game = Game()
-#game.display_board()
-#game.make_move((0, 0), 'x')
-#game.display_board()
-#game.make_move((0, 1), 'o')
-#game.display_board()
+  while True:
+    print(f"Player {game.turn}'s turn.")
+    game.display_board()
+    if game.turn == ai:
+      board = copy(game.board)
+      _, move = minimax(board, ai, 100, True)
+      game.make_move(move, ai)
+    else:
+      while True:
+        try:
+          move_str = input(f"Your turn, please enter your move (row col): ")
+          move = tuple(map(int, move_str.split()))
+          if game.make_move(move, player):
+            print(f"You placed {player} at {move[0], move[1]}")
+            break
+          else:
+            print("Invalid move. Please try again.")
+        except ValueError:
+          print("Invalid input format. Please enter row and column as integers.")
+
+    if game.is_winner(game.turn):
+      print(f"Player {game.turn} won!")
+      break
+    elif game.is_draw():
+      print("Draw!")
+      break
+
+  print("Play again? (yes/no)")
+  if input() == "yes":
+    play()
+  else:
+    print("Quitting...")
+    return
+
+if __name__ == "__main__":
+  play()
