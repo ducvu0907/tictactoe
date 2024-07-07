@@ -1,5 +1,4 @@
-from algo import minimax
-from copy import copy
+from algo import ai_move
 
 class Game:
   def __init__(self, board_size=5):
@@ -66,7 +65,6 @@ class Game:
     if self.turn == player and self.is_valid_move(move):
       row, col = move
       self.board[row][col] = player
-      self.turn = 'o' if player == 'x' else 'x'
       return True
     else:
       return False
@@ -86,9 +84,8 @@ def play():
     print(f"Player {game.turn}'s turn.")
     game.display_board()
     if game.turn == ai:
-      board = copy(game.board)
-      _, move = minimax(board, ai, 100, True)
-      game.make_move(move, ai)
+      best_move = ai_move(game, ai, player)
+      game.make_move(best_move, ai)
     else:
       while True:
         try:
@@ -104,10 +101,14 @@ def play():
 
     if game.is_winner(game.turn):
       print(f"Player {game.turn} won!")
+      game.display_board()
       break
     elif game.is_draw():
       print("Draw!")
+      game.display_board()
       break
+
+    game.turn = 'x' if game.turn == 'o' else 'o' # switch turn
 
   print("Play again? (yes/no)")
   if input() == "yes":
