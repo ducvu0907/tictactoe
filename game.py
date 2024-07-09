@@ -1,4 +1,4 @@
-from algo import ai_move
+from minimax import ai_move
 
 class Game:
   def __init__(self, board_size=5):
@@ -26,23 +26,29 @@ class Game:
   def is_winner(self, player):
     """Check 4-in-a-row wins of the board."""
     n = self.board_size
-
     # check all rows
     for row in range(n):
       if all(self.board[row][col] == player for col in range(n-1)) or all(self.board[row][col] == player for col in range(1, n)):
         return True
-    
     # check all columns
     for col in range(n):
       if all(self.board[row][col] == player for row in range(n-1)) or all(self.board[row][col] == player for row in range(1, n)):
         return True
-
-    # check all diagonals
+    # check main diagonals
     if all(self.board[i][i] == player for i in range(n-1)) or all(self.board[i][i] == player for i in range(1, n)):
       return True
+    # check secondary diagonals
     if all(self.board[i][n - i - 1] == player for i in range(n-1)) or all(self.board[i][ n - i - 1] == player for i in range(1, n)):
       return True
-    
+    # check side diagonals
+    if self.board[3][0] == self.board[2][1] == self.board[1][2] == self.board[0][3] == player:
+      return True
+    if self.board[4][1] == self.board[3][2] == self.board[2][3] == self.board[1][4] == player:
+      return True
+    if self.board[1][0] == self.board[2][1] == self.board[3][2] == self.board[4][3] == player:
+      return True
+    if self.board[0][1] == self.board[1][2] == self.board[2][3] == self.board[3][4] == player:
+      return True
     return False
   
   def is_draw(self):
